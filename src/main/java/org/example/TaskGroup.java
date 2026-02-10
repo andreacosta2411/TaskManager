@@ -1,46 +1,89 @@
 package org.example;
-// Importo ArrayList per creare una lista concreta.
+
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-
-// Importo List per usare l'interfaccia Lista.
-import java.util.List;
-
-//Importo Iterator.
 import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
-
-
-
-// Pattern Composite + Iterable
+// Pattern Composite + Iterator (custom)
 public class TaskGroup implements Task, Iterable<Task> {
 
+    private final String name;
 
-    private String name;
-
-    private List<Task> tasks = new ArrayList<>();
-    //Lista interna dei task nel gruppo.
-
+    // Lista interna dei task nel gruppo (può contenere anche altri TaskGroup)
+    private final List<Task> tasks = new ArrayList<>();
 
     public TaskGroup(String name) {
-
         this.name = name;
     }
-    //Aggiunge un task al gruppo.
+
+    // Aggiunge un task al gruppo.
     public void addTask(Task task) {
         tasks.add(task);
     }
 
     @Override
-
     public String getName() {
         return name;
     }
 
-    @Override // Uso  @Override  per sovrascrivere o modificare un comportamento predefinito.
-
+    /**
+     * Iterator "vero":
+     * - attraversa anche TaskGroup annidati (Composite)
+     * - ordine: depth-first
+     */
+    @Override
     public Iterator<Task> iterator() {
-        return tasks.iterator();
+        return new DepthFirstIterator(this);
+    }
 
+    // Iterator custom (depth-first) per il composite
+    private static final class DepthFirstIterator implements Iterator<Task> {
+        private final ArrayDeque<Iterator<Task>> stack = new ArrayDeque<>();
+        private Task next;
+
+        private DepthFirstIterator(TaskGroup root) {
+            stack.push(root.tasks.iterator());
+            advance();
+        }
+
+        private void advance() {
+            next = null;
+
+            while (!stack.isEmpty()) {
+                Iterator<Task> it = stack.peek();
+
+                if (!it.hasNext()) {
+                    stack.pop();
+                    continue;
+                }
+
+                Task candidate = it.next();
+                next = candidate;
+
+                // Java 8: instanceof + cast
+                if (candidate instanceof TaskGroup) {
+                    TaskGroup group = (TaskGroup) candidate;
+                    stack.push(group.tasks.iterator());
+                }
+                return;
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return next != null;
+        }
+
+        @Override
+        public Task next() {
+            if (next == null) {
+                throw new NoSuchElementException();
+            }
+            Task current = next;
+            advance();
+            return current;
+        }
     }
 }
-

@@ -5,30 +5,28 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TaskGroupTest {
 
     @Test
-    void groupHasName() {
-        TaskGroup group = new TaskGroup("Università");
-        assertEquals("Università", group.getName());
-    }
+    void iteratorTraversesNestedGroupsDepthFirst() {
+        TaskGroup root = new TaskGroup("Root");
+        root.addTask(TaskFactory.createTask("A"));
 
-    @Test
-    void iteratorReturnsTasksInInsertionOrder() {
-        TaskGroup group = new TaskGroup("G");
+        TaskGroup sub = new TaskGroup("Sub");
+        sub.addTask(TaskFactory.createTask("B"));
+        sub.addTask(TaskFactory.createTask("C"));
 
-        group.addTask(TaskFactory.createTask("X"));
-        group.addTask(TaskFactory.createTask("Y"));
+        root.addTask(sub);
+        root.addTask(TaskFactory.createTask("D"));
 
-        List<String> names = new ArrayList<>();
-        for (Task t : group) {
+        List<String> names = new ArrayList<String>();
+        for (Task t : root) {
             names.add(t.getName());
         }
 
-        assertEquals(2, names.size());
-        assertEquals("X", names.get(0));
-        assertEquals("Y", names.get(1));
+        // Depth-first: A, Sub, B, C, D
+        assertEquals(List.of("A", "Sub", "B", "C", "D"), names);
     }
 }
