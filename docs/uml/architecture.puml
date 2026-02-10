@@ -1,0 +1,26 @@
+@startuml
+skinparam componentStyle rectangle
+
+actor User
+
+component "Console UI\n(ConsoleMenu)" as UI
+component "Commands\n(Command implementations)" as CMD
+component "Core Logic\n(TaskManager)" as CORE
+component "Domain\n(Task / SimpleTask / TaskGroup)" as DOMAIN
+component "Persistence\n(TaskFileRepository)" as REPO
+component "Factory\n(TaskFactory)" as FACT
+component "Logging\n(AppLogger)" as LOG
+
+User --> UI
+UI --> CMD
+CMD --> CORE
+CORE --> DOMAIN
+
+REPO --> FACT
+FACT --> DOMAIN
+
+UI --> LOG
+CMD --> LOG
+CORE --> LOG
+
+@enduml

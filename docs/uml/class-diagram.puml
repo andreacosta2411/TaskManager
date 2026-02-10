@@ -1,0 +1,71 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package "org.example" {
+
+  interface Task {
+    +getName(): String
+  }
+
+  class SimpleTask {
+    -name: String
+    +SimpleTask(name: String)
+    +getName(): String
+  }
+
+  class TaskGroup {
+    -name: String
+    -tasks: List<Task>
+    +TaskGroup(name: String)
+    +addTask(task: Task): void
+    +getName(): String
+    +iterator(): Iterator<Task>
+  }
+
+  class TaskFactory {
+    +createTask(name: String): Task
+  }
+
+  class TaskManager {
+    -tasks: List<Task>
+    +addTask(task: Task): void
+    +addAll(tasks: List<Task>): void
+    +getTasks(): List<Task>
+    +isEmpty(): boolean
+    +getTasksSortedByNameAsc(): List<Task>
+    +getTasksSortedByNameDesc(): List<Task>
+    +filterTasksByKeyword(keyword: String): List<Task>
+  }
+
+  class TaskFileRepository {
+    +TaskFileRepository(fileName: String)
+    +load(): List<Task>
+    +save(tasks: List<Task>): void
+  }
+
+  class AppLogger {
+    +getLogger(): Logger
+  }
+
+  class ConsoleMenu {
+    +start(): void
+  }
+
+  class Main
+}
+
+SimpleTask ..|> Task
+TaskGroup ..|> Task
+TaskGroup ..|> Iterable
+
+TaskManager o-- "many" Task
+TaskFactory ..> Task
+
+TaskFileRepository ..> TaskFactory
+ConsoleMenu ..> TaskManager
+
+Main ..> ConsoleMenu
+Main ..> AppLogger
+Main ..> TaskManager
+
+@enduml
