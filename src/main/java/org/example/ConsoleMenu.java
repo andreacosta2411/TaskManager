@@ -27,8 +27,6 @@ public class ConsoleMenu {
         commands.put(2, new ListTasksCommand(taskManager));
         commands.put(3, new ListTasksAscCommand(taskManager));
         commands.put(4, new ListTasksDescCommand(taskManager));
-
-        // Se esiste il metodo filterTasksByKeyword nel TaskManager, abilita questa riga:
         commands.put(5, new FilterTasksCommand(taskManager, scanner));
 
         commands.put(0, new ExitCommand(() -> running = false));
@@ -41,8 +39,11 @@ public class ConsoleMenu {
 
             Command cmd = commands.get(choice);
             if (cmd == null) {
-                System.out.println("Scelta non valida.");
-                log.warning("Scelta non valida inserita: " + choice);
+                // Se choice == -1 significa: input non numerico o invalido, messaggio già mostrato da readInt()
+                if (choice != -1) {
+                    System.out.println("Scelta non valida.");
+                    log.warning("Scelta non valida inserita: " + choice);
+                }
                 continue;
             }
 
@@ -59,14 +60,17 @@ public class ConsoleMenu {
         System.out.print("Scelta: ");
     }
 
+    // Exception Shielding: qui intercettiamo input invalido senza far crashare il programma
     private int readInt() {
-        String s = scanner.nextLine().trim();
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            System.out.println("Input non numerico.");
-            log.warning("Input non numerico inserito nel menu: " + s);
+        String raw = scanner.nextLine();
+
+        Result<Integer> parsed = InputSanitizer.parseInt(raw, "Scelta");
+        if (!parsed.isOk()) {
+            System.out.println(parsed.getUserMessage());
+            log.warning(parsed.getTechnicalMessage());
             return -1;
         }
+
+        return parsed.getValue();
     }
 }
